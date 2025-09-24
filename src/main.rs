@@ -25,12 +25,6 @@ fn handle_client(mut stream: TcpStream) -> std::io::Result<()> {
     // create a buffer to read the request
     let mut buffer = [0; 1024];
 
-    // hard-coded correlation_id of 7 as a 32-bit signed integer
-    let correlation_id: i32 = 7;
-
-    // convert to bytes (little-endian)
-    let bytes = correlation_id.to_le_bytes();
-
     match stream.read(&mut buffer) {
         Ok(bytes_read) => {
             if bytes_read == 0 {
@@ -41,9 +35,15 @@ fn handle_client(mut stream: TcpStream) -> std::io::Result<()> {
             let request = String::from_utf8_lossy(&buffer[..bytes_read]);
             println!("Received request: {}", request);
 
-            stream.write_all(&bytes)?;
+            // hard-coded correlation_id of 7 as a 32-bit signed integer
+            let correlation_id: i32 = 7;
+
+            // convert to bytes (big-endian for Kafka protocol)
+            let correlation_bytes = correlation_id.to_be_bytes();
+
+            stream.write_all(&correlation_bytes)?;
             stream.flush()?;
-            println!("Sent correlation_id: {correlation_id} as bytes: {bytes:?}");
+            println!("Sent correlation_id: {correlation_id} as bytes: {correlation_bytes:?}");
         }
         Err(e) => {
             eprintln!("Error reading from stream: {}", e);
