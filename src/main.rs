@@ -37,7 +37,7 @@ fn handle_client(mut stream: TcpStream) -> std::io::Result<()> {
 
             // Response header v0 format:
             // message_size (4 bytes) + correlation_id (4 bytes)
-            let message_size: i32 = 0;
+            let message_size: i32 = 4;
             // hard-coded correlation_id of 7 as a 32-bit signed integer
             let correlation_id: i32 = 7;
 
