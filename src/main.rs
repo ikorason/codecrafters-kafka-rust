@@ -35,15 +35,17 @@ fn handle_client(mut stream: TcpStream) -> std::io::Result<()> {
             let request = String::from_utf8_lossy(&buffer[..bytes_read]);
             println!("Received request: {}", request);
 
+            // Response header v0 format:
+            // message_size (4 bytes) + correlation_id (4 bytes)
+            let message_size: i32 = 0;
             // hard-coded correlation_id of 7 as a 32-bit signed integer
             let correlation_id: i32 = 7;
 
-            // convert to bytes (big-endian for Kafka protocol)
-            let correlation_bytes = correlation_id.to_be_bytes();
-
-            stream.write_all(&correlation_bytes)?;
+            stream.write_all(&message_size.to_be_bytes())?;
+            stream.write_all(&correlation_id.to_be_bytes())?;
             stream.flush()?;
-            println!("Sent correlation_id: {correlation_id} as bytes: {correlation_bytes:?}");
+
+            println!("Sent message_size: {message_size}, correlation_id: {correlation_id}");
         }
         Err(e) => {
             eprintln!("Error reading from stream: {}", e);
